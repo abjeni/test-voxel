@@ -63,8 +63,10 @@ function movement(deltatime) {
         
         if (velocity[0] != 0) {
             feet[0] = feet[0]+velocity[0]*deltatime;
+
             var t = [feet[0]+0.1*Math.sign(velocity[0]),feet[1]+0.001,feet[2]]
-                    .map(x => Math.floor(x))
+                    .map(x => Math.floor(x));
+            
             if (getvoxel(t)) {
                 feet[0] = t[0]-Math.sign(velocity[0])*(0.5+0.1)+0.5;
                 velocity[0] = 0;
@@ -76,6 +78,7 @@ function movement(deltatime) {
 
             var t = [feet[0],feet[1]+0.001,feet[2]+0.1*Math.sign(velocity[2])]
                     .map(x => Math.floor(x));
+            
             if (getvoxel(t)) {
                 feet[2] = t[2]-Math.sign(velocity[2])*(0.6)+0.5;
                 velocity[2] = 0;

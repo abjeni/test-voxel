@@ -41,6 +41,73 @@ function makeDataTexture(data, numElements, channels, internalFormat, format) {
     return tex;
 }
 
+function pixelToUv(pixel) {
+    if (mouseLock) return [0,0];
+    return [(pixel[0]*2.0-canvas.width)/canvas.height,-pixel[1]/canvas.height*2.0+1.0];
+}
+
+function uvToRay(uv) {
+    var trans = m3.identity();
+    trans = m3.yRotate(trans, rot[0]);
+    trans = m3.xRotate(trans, rot[1]);
+
+    var rd = [uv[0],uv[1],-1];
+    
+    var len = 1.0/Math.sqrt(dot2(rd));
+    rd = rd.map(x => x*len);
+    rd = m3.transformVector(trans,rd);
+    
+    return rd;
+}
+
+function castRay(ro, rd, maxlen) {
+    var ird = rd.map(x => Math.abs(1.0/x));
+    var srd = rd.map(x => Math.sign(x));
+    
+    var fro = ro.map(x => Math.floor(x));
+    var lro = map2([ro,fro], (x,y) => x-y);
+    
+    var lens = map2([lro,ird,srd], function(lro,ird,srd) {
+        if (srd == 1) lro = 1-lro;
+        return lro*ird;
+    });
+
+    var closest = 0;
+    var didHit = false;
+    var d = 0;
+    for (var i = 0; i < 100; i++) {
+        d = lens[closest]-ird[closest];
+        if (getvoxel(fro) || d > maxlen) {
+            break;
+        }
+        
+        if (lens[0] < lens[1] && lens[0] < lens[2])
+            closest = 0;
+        else if (lens[1] < lens[2])
+            closest = 1;
+        else
+            closest = 2;
+
+        fro[closest] += srd[closest];
+        lens[closest] += ird[closest];
+    }
+    didHit = d <= maxlen;
+
+    var normal = new Array(3).fill(0);
+    normal[closest] = -srd[closest];
+    var buildBlock = fro.slice();
+    buildBlock[closest] -= srd[closest];
+    return {
+        d: d,
+        didHit: didHit,
+        face: closest*2+0.5-srd[closest]*0.5,
+        closest: closest,
+        hitBlock: fro,
+        buildBlock: buildBlock,
+        normal: normal
+    }
+}
+
 function getfrustum(p) {
     if (!cameraMatrix2) return false;
     var p2 = p.map(x=>x);

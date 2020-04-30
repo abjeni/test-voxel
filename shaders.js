@@ -77,7 +77,7 @@ var voxelVertexShaderSource =
         gl_Position = u_proj * vec4(wpos,1);
     }
 `;
- 
+
 var voxelFragmentShaderSource =
 `#version 300 es
 
@@ -151,6 +151,48 @@ var characterFragmentShaderSource =
     }
 `;
 
+var boxFrameVertexShaderSource =
+`#version 300 es
+
+    precision mediump float;
+    
+    uniform vec3 u_position;
+    uniform mat4 u_proj;
+    
+    void main() {
+
+        uint id = uint(gl_VertexID);
+
+        vec3 position = vec3(id&1u,(id>>1u)&1u,(id>>2u)&1u);
+
+        if (id < 8u) {
+            position.xy = position.yx;
+        } else if (id < 16u) {
+            position.xz = position.zx;
+        }
+
+        float outline = 0.01;
+        position = position*(1.0+outline*2.0)-outline;
+
+        gl_Position = u_proj * vec4(position+u_position,1);
+    }
+`;
+ 
+var boxFrameFragmentShaderSource =
+`#version 300 es
+
+    precision mediump float;
+    
+    out vec4 outColor;
+    
+    void main() {
+        vec3 color = vec3(0);
+        
+        outColor = vec4(color,1);
+        
+    }
+`;
+
 function createShader(gl, type, source) {
     var shader = gl.createShader(type);
     gl.shaderSource(shader, source);
@@ -182,7 +224,9 @@ var shaders = {
     vertexVoxel: createShader(gl, gl.VERTEX_SHADER, voxelVertexShaderSource),
     fragmentVoxel: createShader(gl, gl.FRAGMENT_SHADER, voxelFragmentShaderSource),
     vertexCharacter: createShader(gl, gl.VERTEX_SHADER, characterVertexShaderSource),
-    fragmentCharacter: createShader(gl, gl.FRAGMENT_SHADER, characterFragmentShaderSource)
+    fragmentCharacter: createShader(gl, gl.FRAGMENT_SHADER, characterFragmentShaderSource),
+    vertexBoxFrame: createShader(gl, gl.VERTEX_SHADER, boxFrameVertexShaderSource),
+    fragmentBoxFrame: createShader(gl, gl.FRAGMENT_SHADER, boxFrameFragmentShaderSource)
 }
 
 function program(vertexShader, fragMentShader, uniforms) {
@@ -202,5 +246,8 @@ var programs = {
     character: new program(shaders.vertexCharacter,shaders.fragmentCharacter, [
         "u_lightPosition", "u_cameraPosition", "u_centerPosition",
         "u_proj", "u_world"
+    ]),
+    boxFrame: new program(shaders.vertexBoxFrame,shaders.fragmentBoxFrame, [
+        "u_position", "u_proj"
     ])
 }

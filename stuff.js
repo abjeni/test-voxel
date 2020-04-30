@@ -125,6 +125,20 @@ function loop(now) {
         r = rot;
     }
 
+    if (!freelook) {
+        var uv = pixelToUv(lm);
+        var rd = uvToRay(uv);
+        var ro = pos;
+
+        var rayCast = castRay(ro,rd, 5.0);
+
+        testcubes[0] = rayCast.hitBlock;
+
+        if (!rayCast.didHit) {
+            testcubes = [];
+        }
+    }
+
     var cameraTransform = m4.translation(p);
     cameraTransform = m4.yRotate(cameraTransform, r[0]);
     cameraTransform = m4.xRotate(cameraTransform, r[1]);
@@ -162,7 +176,6 @@ function loop(now) {
 	gl.uniform3fv(program2.uniforms.u_cameraPosition, pos);
     gl.uniformMatrix4fv(program2.uniforms.u_proj, false, cameraMatrix);
 
-    //for (const [pos, chunk] of chunks) {
     chunks.forEach((chunk, pos, map) => {
         if (chunk.loadstate == LOAD_DONE) {
             var center = chunk.center.map(x => x*chunksize);
@@ -215,17 +228,20 @@ function loop(now) {
     var type = gl.UNSIGNED_SHORT;
     var offset = 0;
     gl.drawElements(primitiveType, count, type, offset);
+    
+    testcubes.forEach(function(cube) {
+        var program2 = programs.boxFrame;
+        gl.useProgram(program2.program);
 
-    for(cube in testcubes) {
-        var char2 = m4.translation(testcubes[cube]);
-        gl.uniformMatrix4fv(program2.uniforms.u_world, false, char2);
+        gl.uniformMatrix4fv(program2.uniforms.u_proj, false, cameraMatrix);
+        gl.uniform3fv(program2.uniforms.u_position, cube);
 
-        var primitiveType = gl.TRIANGLES;
-        var count = 36;
-        var type = gl.UNSIGNED_SHORT;
+        var primitiveType = gl.LINES;
+        var count = 24;
         var offset = 0;
-        gl.drawElements(primitiveType, count, type, offset);
-    }
+        gl.drawArrays(primitiveType, offset, count);
+    });
+    gl.flush();
 
 	requestAnimationFrame(loop);
 }
