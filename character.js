@@ -60,51 +60,55 @@ function movement(deltatime) {
         
         var feet = [pos[0],pos[1]-1.4,pos[2]];
         
+        var footBlock = feet.map(x => Math.floor(x));
+
         if (velocity[0] != 0) {
 
             feet[0] = feet[0]+velocity[0]*deltatime;
-        
+            
             var sideBlock = feet.slice();
             sideBlock[0] += 0.5*Math.sign(velocity[0]);
             sideBlock = sideBlock.map(x => Math.floor(x));
-            var collision = false;
-            for (var y = 0; y <= 3; y++) {
-                for (var z = -1; z <= 1; z++) {
-                    var block = sideBlock.slice();
-                    block[1] += y;
-                    block[2] += z;
-                    var posOnBlock = feet.slice();
-                    posOnBlock[1] -= block[1];
-                    posOnBlock[2] -= block[2];
+            if (sideBlock[0] != footBlock[0]) {
+                var collision = false;
+                for (var y = 0; y <= 3; y++) {
+                    for (var z = -1; z <= 1; z++) {
+                        var block = sideBlock.slice();
+                        block[1] += y;
+                        block[2] += z;
+                        var posOnBlock = feet.slice();
+                        posOnBlock[1] -= block[1];
+                        posOnBlock[2] -= block[2];
 
-                    //console.log(posOnBlock)
-                    if (posOnBlock[1] > -1.5 && posOnBlock[2] > -0.1 &&
-                        posOnBlock[1] <  1.0 && posOnBlock[2] <  1.1) {
-                        
-                        if (getvoxel(block)) {
-                            collision = true;
-                            break;
+                        //console.log(posOnBlock)
+                        if (posOnBlock[1] > -1.5 && posOnBlock[2] > -0.1 &&
+                            posOnBlock[1] <  0.9 && posOnBlock[2] <  1.1) {
+                            
+                            if (getvoxel(block)) {
+                                collision = true;
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            if (collision) {
-                if (velocity[0] < 0) {
-                    var border = sideBlock[0]+1+0.1;
-                    
-                    if (feet[0] < border) {
-                        feet[0] = border;
-                        velocity[0] = 0;
+                if (collision) {
+                    if (velocity[0] < 0) {
+                        var border = sideBlock[0]+1+0.11;
+                        
+                        if (feet[0] < border) {
+                            feet[0] = border;
+                            velocity[0] = 0;
+                        }
                     }
-                }
-                
-                if (velocity[0] > 0) {
-                    var border = sideBlock[0]-0.1;
                     
-                    if (feet[0] > border) {
-                        feet[0] = border;
-                        velocity[0] = 0;
+                    if (velocity[0] > 0) {
+                        var border = sideBlock[0]-0.11;
+                        
+                        if (feet[0] > border) {
+                            feet[0] = border;
+                            velocity[0] = 0;
+                        }
                     }
                 }
             }
@@ -117,44 +121,46 @@ function movement(deltatime) {
             var sideBlock = feet.slice();
             sideBlock[2] += 0.5*Math.sign(velocity[2]);
             sideBlock = sideBlock.map(x => Math.floor(x));
-            var collision = false;
-            for (var y = -1; y <= 3; y++) {
-                for (var x = -1; x <= 1; x++) {
-                    var block = sideBlock.slice();
-                    block[1] += y;
-                    block[0] += x;
-                    var posOnBlock = feet.slice();
-                    posOnBlock[1] -= block[1];
-                    posOnBlock[0] -= block[0];
+            if (sideBlock[2] != footBlock[2]) {
+                var collision = false;
+                for (var y = -1; y <= 3; y++) {
+                    for (var x = -1; x <= 1; x++) {
+                        var block = sideBlock.slice();
+                        block[1] += y;
+                        block[0] += x;
+                        var feetOnBlock = feet.slice();
+                        feetOnBlock[1] -= block[1];
+                        feetOnBlock[0] -= block[0];
 
-                    //console.log(posOnBlock)
-                    if (posOnBlock[1] > -1.5 && posOnBlock[0] > -0.1 &&
-                        posOnBlock[1] <  1.0 && posOnBlock[0] <  1.1) {
-                        
-                        if (getvoxel(block)) {
-                            collision = true;
-                            break;
+                        //console.log(posOnBlock)
+                        if (feetOnBlock[1] > -1.5 && feetOnBlock[0] > -0.1 &&
+                            feetOnBlock[1] <  0.9 && feetOnBlock[0] <  1.1) {
+                            
+                            if (getvoxel(block)) {
+                                collision = true;
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            if (collision) {
-                if (velocity[2] < 0) {
-                    var border = sideBlock[2]+1+0.1;
-                    
-                    if (feet[2] < border) {
-                        feet[2] = border;
-                        velocity[2] = 0;
+                if (collision) {
+                    if (velocity[2] < 0) {
+                        var border = sideBlock[2]+1+0.11;
+                        
+                        if (feet[2] < border) {
+                            feet[2] = border;
+                            velocity[2] = 0;
+                        }
                     }
-                }
-                
-                if (velocity[2] > 0) {
-                    var border = sideBlock[2]-0.1;
                     
-                    if (feet[2] > border) {
-                        feet[2] = border;
-                        velocity[2] = 0;
+                    if (velocity[2] > 0) {
+                        var border = sideBlock[2]-0.11;
+                        
+                        if (feet[2] > border) {
+                            feet[2] = border;
+                            velocity[2] = 0;
+                        }
                     }
                 }
             }
@@ -164,7 +170,7 @@ function movement(deltatime) {
         feet[1] = feet[1]+velocity[1]*deltatime;
 
         var groundBlock = feet.slice();
-        groundBlock[1] -= 0.5;
+        groundBlock[1] -= 0.1;
         groundBlock = groundBlock.map(x => Math.floor(x));
 
         if (feet[1] < groundBlock[1]+1) {
@@ -199,7 +205,7 @@ function movement(deltatime) {
 
         
         var headBlock = pos.slice();
-        headBlock[1] += 0.5;
+        headBlock[1] += 0.1;
         headBlock = headBlock.map(x => Math.floor(x));
         
         if (feet[1]+1.5 > headBlock[1]) {
