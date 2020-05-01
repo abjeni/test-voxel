@@ -60,39 +60,178 @@ function movement(deltatime) {
         
         var feet = [pos[0],pos[1]-1.4,pos[2]];
         
-        
         if (velocity[0] != 0) {
-            feet[0] = feet[0]+velocity[0]*deltatime;
 
-            var t = [feet[0]+0.1*Math.sign(velocity[0]),feet[1]+0.001,feet[2]]
-                    .map(x => Math.floor(x));
-            
-            if (getvoxel(t)) {
-                feet[0] = t[0]-Math.sign(velocity[0])*(0.5+0.1)+0.5;
-                velocity[0] = 0;
+            feet[0] = feet[0]+velocity[0]*deltatime;
+        
+            var sideBlock = feet.slice();
+            sideBlock[0] += 0.5*Math.sign(velocity[0]);
+            sideBlock = sideBlock.map(x => Math.floor(x));
+            var collision = false;
+            for (var y = 0; y <= 3; y++) {
+                for (var z = -1; z <= 1; z++) {
+                    var block = sideBlock.slice();
+                    block[1] += y;
+                    block[2] += z;
+                    var posOnBlock = feet.slice();
+                    posOnBlock[1] -= block[1];
+                    posOnBlock[2] -= block[2];
+
+                    //console.log(posOnBlock)
+                    if (posOnBlock[1] > -1.5 && posOnBlock[2] > -0.1 &&
+                        posOnBlock[1] <  1.0 && posOnBlock[2] <  1.1) {
+                        
+                        if (getvoxel(block)) {
+                            collision = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (collision) {
+                if (velocity[0] < 0) {
+                    var border = sideBlock[0]+1+0.1;
+                    
+                    if (feet[0] < border) {
+                        feet[0] = border;
+                        velocity[0] = 0;
+                    }
+                }
+                
+                if (velocity[0] > 0) {
+                    var border = sideBlock[0]-0.1;
+                    
+                    if (feet[0] > border) {
+                        feet[0] = border;
+                        velocity[0] = 0;
+                    }
+                }
             }
         }
         
         if (velocity[2] != 0) {
-            feet[2] = feet[2]+velocity[2]*deltatime;
-
-            var t = [feet[0],feet[1]+0.001,feet[2]+0.1*Math.sign(velocity[2])]
-                    .map(x => Math.floor(x));
             
-            if (getvoxel(t)) {
-                feet[2] = t[2]-Math.sign(velocity[2])*(0.6)+0.5;
-                velocity[2] = 0;
+            feet[2] = feet[2]+velocity[2]*deltatime;
+        
+            var sideBlock = feet.slice();
+            sideBlock[2] += 0.5*Math.sign(velocity[2]);
+            sideBlock = sideBlock.map(x => Math.floor(x));
+            var collision = false;
+            for (var y = -1; y <= 3; y++) {
+                for (var x = -1; x <= 1; x++) {
+                    var block = sideBlock.slice();
+                    block[1] += y;
+                    block[0] += x;
+                    var posOnBlock = feet.slice();
+                    posOnBlock[1] -= block[1];
+                    posOnBlock[0] -= block[0];
+
+                    //console.log(posOnBlock)
+                    if (posOnBlock[1] > -1.5 && posOnBlock[0] > -0.1 &&
+                        posOnBlock[1] <  1.0 && posOnBlock[0] <  1.1) {
+                        
+                        if (getvoxel(block)) {
+                            collision = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (collision) {
+                if (velocity[2] < 0) {
+                    var border = sideBlock[2]+1+0.1;
+                    
+                    if (feet[2] < border) {
+                        feet[2] = border;
+                        velocity[2] = 0;
+                    }
+                }
+                
+                if (velocity[2] > 0) {
+                    var border = sideBlock[2]-0.1;
+                    
+                    if (feet[2] > border) {
+                        feet[2] = border;
+                        velocity[2] = 0;
+                    }
+                }
             }
         }
-        
+
         grounded = false;
         feet[1] = feet[1]+velocity[1]*deltatime;
-        if (getvoxel(feet.map(x => Math.floor(x)))) {
-            grounded = true;
-            feet[1] = Math.floor(feet[1]+1);
-            velocity[1] = 0;
+
+        var groundBlock = feet.slice();
+        groundBlock[1] -= 0.5;
+        groundBlock = groundBlock.map(x => Math.floor(x));
+
+        if (feet[1] < groundBlock[1]+1) {
+            var blockBelow = false;
+            for (var x = -1; x <= 1; x++) {
+                for (var z = -1; z <= 1; z++) {
+                    var block = groundBlock.slice();
+                    block[0] += x;
+                    block[2] += z;
+                    var posOnBlock = pos.slice();
+                    posOnBlock[0] -= block[0];
+                    posOnBlock[2] -= block[2];
+
+                    //console.log(posOnBlock)
+                    if (posOnBlock[0] > -0.1 && posOnBlock[2] > -0.1 &&
+                        posOnBlock[0] <  1.1 && posOnBlock[2] <  1.1) {
+                        
+                        if (getvoxel(block)) {
+                            blockBelow = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (blockBelow) {
+                grounded = true;
+                feet[1] = groundBlock[1]+1;
+                velocity[1] = 0;
+            }
         }
+
         
+        var headBlock = pos.slice();
+        headBlock[1] += 0.5;
+        headBlock = headBlock.map(x => Math.floor(x));
+        
+        if (feet[1]+1.5 > headBlock[1]) {
+            var blockAbove = false;
+            for (var x = -1; x <= 1; x++) {
+                for (var z = -1; z <= 1; z++) {
+                    var block = headBlock.slice();
+                    block[0] += x;
+                    block[2] += z;
+                    var posOnBlock = pos.slice();
+                    posOnBlock[0] -= block[0];
+                    posOnBlock[2] -= block[2];
+
+                    //console.log(posOnBlock)
+                    if (posOnBlock[0] > -0.1 && posOnBlock[2] > -0.1 &&
+                        posOnBlock[0] <  1.1 && posOnBlock[2] <  1.1) {
+                        
+                        if (getvoxel(block)) {
+                            blockAbove = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (blockAbove) {
+                feet[1] = headBlock[1]-1.5;
+                
+                if (velocity[1] > 0) velocity[1] = 0;
+            }
+        }
+
         pos = [feet[0],feet[1]+1.4,feet[2]];
     } else {
         if ((move[0]!=0 || move[1]!=0 || move[2]!=0)) {

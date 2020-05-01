@@ -15,6 +15,16 @@
                 height: 100vh;
                 display: block;
             }
+            /* make the canvas the size of the viewport */
+            #crosshair {
+                position: absolute;
+                margin: auto;
+                background-color: white;
+                padding: 2px;
+                top: calc(50% - 1px);
+                left: calc(50% - 1px);
+                mix-blend-mode: exclusion;
+            }
             
             #uiContainer {
                 position: absolute;
@@ -24,7 +34,10 @@
         </style>
     </head>
     <body>
-        <canvas id="c"></canvas>
+        <div id = "crosshair"></div>
+        <canvas id="c">
+            
+        </canvas>
         <script src="globals.js"></script>
         <script src="boththreads.js"></script>
         <script src="vector.js"></script>

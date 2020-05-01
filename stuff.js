@@ -241,6 +241,7 @@ function loop(now) {
         var offset = 0;
         gl.drawArrays(primitiveType, offset, count);
     });
+
     gl.flush();
 
 	requestAnimationFrame(loop);
