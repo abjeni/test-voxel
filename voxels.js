@@ -5,6 +5,63 @@ importScripts("boththreads.js");
 var init = true;
 var lastc;
 
+function fract(a) {
+    if (typeof a == "number") {
+        return a-Math.floor(a);
+    }
+    return a.map(x => x-Math.floor(x));
+}
+
+function floor(a) {
+    if (typeof a == "number") {
+        return Math.floor(a);
+    }
+    return a.map(x => Math.floor(x));
+}
+
+//  1 out, 2 in...
+function Hash12(p)
+{
+	var p3  = fract([p[0],p[1],p[0]].map(x => x*0.1));
+    var c = dot(p3, swizzle(p3.map(x => x + 19.19),[1,2,0]));
+    var p4 = p3.map(x => x+c);
+    var b = (p4[0] + p4[1]) * p4[2];
+    var a = fract(b);
+    return a;
+}
+
+function Noise(x)
+{
+    var p = floor(x);
+    var f = fract(x);
+    f = f.map(f => f*f*(3.0-2.0*f));
+    
+    var test = Hash12(p);
+
+    var res = mix(mix(Hash12([p[0]+0,p[1]+0]), Hash12([p[0]+1,p[1]+0]),f[0]),
+                  mix(Hash12([p[0]+0,p[1]+1]), Hash12([p[0]+1,p[1]+1]),f[0]),f[1]);
+    return res;
+}
+
+function Terrain(p)
+{
+	var pos = p.map(x => x*0.2);
+	var w = Noise(pos.map(x => x*0.25))*0.75+0.15;
+    w = 66 * w * w;
+    
+	var f = 0;
+	for (var i = 0; i < 5; i++)
+	{
+		f += w * Noise(pos);
+		w = -w * 0.4;	//...Flip negative and positive for variation
+		//pos = rotate2D * pos;
+	}
+	var ff = Noise(pos.map(x => x*.002));
+	
+	f += Math.pow(Math.abs(ff), 5.0)*275-5;
+	return f;
+}
+
 function buildChunk(chunk, s) {
 
     

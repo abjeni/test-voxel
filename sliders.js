@@ -38,9 +38,7 @@ function label() {
     this.lastfps = 60;
     this.count = 0;
 
-    this.refresh = function(data) {
-        this.label.innerHTML = "fps: "+"loading";
-    }
+    this.label.innerHTML = "wait";
 }
 
 var sliders = {
@@ -50,7 +48,8 @@ var sliders = {
 var labels = {
     fps: new label(),
     time: new label(),
-    block: new label()
+    block: new label(),
+    mobile: new label()
 };
 
 labels.fps.refresh = function(data) {
@@ -73,15 +72,25 @@ labels.block.refresh = function(data) {
     this.label.innerHTML = "block: "+selectedblock;
 }
 
+/*labels.mobile.refresh = function(data) {
+    if (lm) {
+        this.label.innerHTML = lm;
+    } else {
+        this.label.innerHTML = "oh no";
+    }
+}*/
+
 function updateinput() {
     for (var name in sliders) {
-        sliders[name].refresh(name);
+        if (sliders[name].refresh)
+            sliders[name].refresh(name);
     }
 }
 
 function updateoutput(data) {
     for (var name in labels) {
-        labels[name].refresh(data);
+        if (labels[name].refresh)
+            labels[name].refresh(data);
     }
 }
 updateinput();

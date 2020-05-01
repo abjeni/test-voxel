@@ -41,6 +41,35 @@ function makeDataTexture(data, numElements, channels, internalFormat, format) {
     return tex;
 }
 
+function getVoxel(pos) {
+    
+    var chunkPosition = pos.map(x => Math.floor(x/chunksize));
+    var blockPosition = pos.map(x => mod(x,chunksize));
+
+    if (!chunks.has(chunkPosition.toString())) return true;
+    var chunk = chunks.get(chunkPosition.toString());
+    if (chunk.loadstate == LOAD_WAIT) return true;
+    return chunk.chunkID[blockPosition[0]][blockPosition[1]][blockPosition[2]];
+
+    /*var p = pos.map(x => x*0.4);
+
+    var p2 = p.slice();
+
+    p[0] = Math.cos(p2[0]*.2739 + 3.0*Math.sin(0.5*p2[2]));
+    p[1] = Math.cos(p2[1]*.2739 + 3.0*Math.sin(0.5*p2[0]));
+    p[2] = Math.cos(p2[2]*.2739 + 3.0*Math.sin(0.5*p2[1]));
+    
+    var n = p[1]+p[0]+p[2];//p.reduce((acc,val) => acc+val);
+    
+    //var a = pos.reduce((acc,x) => acc + Math.sin(x*1.4))/3-1;
+
+    return n > Math.max(pos[1]*0.1,-2);*/
+
+
+    /*var a = Terrain([pos[0],pos[2]]);
+    return a > pos[1];*/
+}
+
 function pixelToUv(pixel) {
     if (mouseLock) return [0,0];
     return [(pixel[0]*2.0-canvas.width)/canvas.height,-pixel[1]/canvas.height*2.0+1.0];
@@ -77,7 +106,7 @@ function castRay(ro, rd, maxlen) {
     var d = 0;
     for (var i = 0; i < 100; i++) {
         d = lens[closest]-ird[closest];
-        if (getvoxel(fro) || d > maxlen) {
+        if (getVoxel(fro) || d > maxlen) {
             break;
         }
         
@@ -108,7 +137,7 @@ function castRay(ro, rd, maxlen) {
     }
 }
 
-function getfrustum(p) {
+function getFrustum(p) {
     if (!cameraMatrix2) return false;
     var p2 = p.map(x=>x);
     p2.push(1);
@@ -118,10 +147,4 @@ function getfrustum(p) {
         && a[1] > -a[3] && a[1] < a[3]
         //|| dot2(map2([lastplayerchunk,p],(a,b) => (a-b/chunksize))) < 2.1
            ;
-}
-
-function chunkindex3(p) {
-    const a = rdist*2+1;
-    p = p.map(x => mod(x+rdist,a));
-	return p[0]+p[1]*a+p[2]*a*a;
 }

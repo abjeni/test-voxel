@@ -37,11 +37,11 @@ var voxelVertexShaderSource =
         uint numquad = uint(gl_VertexID)/6u;
 
         ivec2 texel = gettexel(numquad);
-        uvec4 data = getdata1(texel);
-        uvec2 texpos = getdata2(texel);
+        lowp uvec4 data = getdata1(texel);
+        lowp uvec2 texpos = getdata2(texel);
 
-        uint quadid = uint(3-abs(gl_VertexID%6-3));
-        uint nori = data.w%6u;
+        lowp uint quadid = uint(3-abs(gl_VertexID%6-3));
+        lowp uint nori = data.w%6u;
         
         //float n = float(numquad*4u+quadid);
         //wpos += sin(n*vec3(0.5,0.35,0.8)+u_time*vec3(2.0,5.4,0.3)*0.1);
@@ -51,16 +51,16 @@ var voxelVertexShaderSource =
             return;
         }
 
-        uint diri = nori&1u;
-        uint compi = nori/2u;
+        lowp uint diri = nori&1u;
+        lowp uint compi = nori/2u;
 
         //quadid = quadid ^ diri;
 
-        vec2 quad = vec2(quadid&1u,(quadid>>1u)&1u);
+        lowp vec2 quad = vec2(quadid&1u,(quadid>>1u)&1u);
         uv = quad/2.0+vec2(texpos)*0.5;
         if (diri == 0u) quad.xy = quad.yx;
 
-        vec3 nor = vec3(0);
+        lowp vec3 nor = vec3(0);
         nor[compi] = float(diri)*2.0-1.0;
         
         wpos[(compi+1u)%3u] += quad.x;

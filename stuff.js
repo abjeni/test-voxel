@@ -2,12 +2,10 @@ var mouseclick = [-1,-1];
 
 var lm = [0,0];
 
-
 var freelook = false;
 
 gl.enable(gl.CULL_FACE);
 
-//console.log((rdist*2+1)*(rdist*2+1)*(rdist*2+1));
 var chunks = new Map();
 
 function updatechunk(chunk) {
@@ -49,11 +47,16 @@ function loadTexture() {
     // Until then put a single pixel in the texture so we can
     // use it immediately. When the image has finished downloading
     // we'll update the texture with the contents of the image.
-    const levels = 1;
+    const levels = Math.log2(imageSize)+1;
     const internalFormat = gl.RGBA8;
     const width = imageSize*2;
     const height = imageSize*2;
     gl.texStorage2D(gl.TEXTURE_2D, levels, internalFormat, width, height);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     return texture;
 }
@@ -66,29 +69,35 @@ function addTexture(texture, url, p) {
         const level = 0;
         const srcFormat = gl.RGBA;
         const srcType = gl.UNSIGNED_BYTE;
-        console.log(image);
         gl.texSubImage2D(
             gl.TEXTURE_2D, level,
             p[0],p[1], imageSize, imageSize,
             srcFormat, srcType, image);
+
+        loadedimages++;
+
+        if (loadedimages == 4) {
+            gl.bindTexture(gl.TEXTURE_2D, grasstexture);
+            gl.generateMipmap(gl.TEXTURE_2D);
+        }
     };
     image.src = url;
 
     return texture;
 }
-  
+
+var loadedimages = 0;
 var grasstexture = loadTexture();
 addTexture(grasstexture, "grass.jpg", [0,0]);
 addTexture(grasstexture, "dirt.jpg" , [1,0]);
 addTexture(grasstexture, "stone.jpg" , [0,1]);
 addTexture(grasstexture, "dirt.jpg" , [1,1]);
-
-
     
 gl.enable(gl.DEPTH_TEST);
 
 var then = 0.0;
 function loop(now) {
+
     time = now/1000;
     
     var deltaTime = time-then;
@@ -113,7 +122,7 @@ function loop(now) {
 	
     var aspect = res[0] / res[1];
     var zNear = 0.1;
-    var zFar = 2000;
+    var zFar = 1000;
     
     var p;
     var r;
@@ -163,7 +172,7 @@ function loop(now) {
     
     gl.viewport(0, 0, res[0], res[1]);
 	
-    gl.clearColor(0.5, 0.5, 0.5, 1);
+    gl.clearColor(0.5, 0.5, 0.8, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
     var vao = vaos.cube;
@@ -175,31 +184,33 @@ function loop(now) {
 	gl.uniform3fv(program2.uniforms.u_lightPosition, pos);
 	gl.uniform3fv(program2.uniforms.u_cameraPosition, pos);
     gl.uniformMatrix4fv(program2.uniforms.u_proj, false, cameraMatrix);
+                    
+    gl.activeTexture(gl.TEXTURE0 + 2);
+    gl.bindTexture(gl.TEXTURE_2D, grasstexture);
+    gl.uniform1i(program2.uniforms.u_grass, 2);
 
     chunks.forEach((chunk, pos, map) => {
         if (chunk.loadstate == LOAD_DONE) {
-            var center = chunk.center.map(x => x*chunksize);
-            if (getfrustum(center.map(x => x+chunksize*0.5))) {
-                gl.uniform3fv(program2.uniforms.u_centerPosition, center);
+            if (chunk.quads > 0) {
+                var center = chunk.center.map(x => x*chunksize);
+                if (getFrustum(center.map(x => x+chunksize*0.5))) {
+                    gl.uniform3fv(program2.uniforms.u_centerPosition, center);
 
-                gl.bindVertexArray(chunk.vao);
-
-                gl.activeTexture(gl.TEXTURE0 + 0);
-                gl.bindTexture(gl.TEXTURE_2D, chunk.datatex);
-                gl.uniform1i(program2.uniforms.u_data, 0);
-                
-                gl.activeTexture(gl.TEXTURE0 + 1);
-                gl.bindTexture(gl.TEXTURE_2D, chunk.texloc);
-                gl.uniform1i(program2.uniforms.u_texpos, 1);
-                
-                gl.activeTexture(gl.TEXTURE0 + 2);
-                gl.bindTexture(gl.TEXTURE_2D, grasstexture);
-                gl.uniform1i(program2.uniforms.u_grass, 2);
-                
-                var primitiveType = gl.TRIANGLES;
-                var count = chunk.quads*6;
-                var offset = 0;
-                gl.drawArrays(primitiveType, offset, count);
+                    gl.bindVertexArray(chunk.vao);
+                    
+                    gl.activeTexture(gl.TEXTURE0 + 0);
+                    gl.bindTexture(gl.TEXTURE_2D, chunk.datatex);
+                    gl.uniform1i(program2.uniforms.u_data, 0);
+                    
+                    gl.activeTexture(gl.TEXTURE0 + 1);
+                    gl.bindTexture(gl.TEXTURE_2D, chunk.texloc);
+                    gl.uniform1i(program2.uniforms.u_texpos, 1);
+                    
+                    var primitiveType = gl.TRIANGLES;
+                    var count = chunk.quads*6;
+                    var offset = 0;
+                    gl.drawArrays(primitiveType, offset, count);
+                }
             }
         }
     });

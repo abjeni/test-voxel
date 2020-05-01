@@ -2,33 +2,41 @@
 
 var velocity = [0,0,0];
 var grounded = false;
+
+var touchMove = [0,0,0];
+
 function movement(deltatime) {
     
-    var move = [0,0,0];
+    var move;
     
-    if (keys[87]) {
-        //w
-        move[2]-=1;
-    }
-    if (keys[83]) {
-        //s
-        move[2]+=1;
-    }
-    if (keys[69]) {
-        //d
-        move[1]+=1;
-    }
-    if (keys[81]) {
-        //a
-        move[1]-=1;
-    }
-    if (keys[68]) {
-        //d
-        move[0]+=1;
-    }
-    if (keys[65]) {
-        //a
-        move[0]-=1;
+    if (isMoving) {
+        move = touchMove;
+    } else {
+        move = new Array(3).fill(0);
+        if (keys[87]) {
+            //w
+            move[2]-=1;
+        }
+        if (keys[83]) {
+            //s
+            move[2]+=1;
+        }
+        if (keys[69]) {
+            //d
+            move[1]+=1;
+        }
+        if (keys[81]) {
+            //a
+            move[1]-=1;
+        }
+        if (keys[68]) {
+            //d
+            move[0]+=1;
+        }
+        if (keys[65]) {
+            //a
+            move[0]-=1;
+        }
     }
     
     if (!freelook) {
@@ -80,11 +88,10 @@ function movement(deltatime) {
                         posOnBlock[1] -= block[1];
                         posOnBlock[2] -= block[2];
 
-                        //console.log(posOnBlock)
                         if (posOnBlock[1] > -1.5 && posOnBlock[2] > -0.1 &&
                             posOnBlock[1] <  0.9 && posOnBlock[2] <  1.1) {
                             
-                            if (getvoxel(block)) {
+                            if (getVoxel(block)) {
                                 collision = true;
                                 break;
                             }
@@ -132,11 +139,10 @@ function movement(deltatime) {
                         feetOnBlock[1] -= block[1];
                         feetOnBlock[0] -= block[0];
 
-                        //console.log(posOnBlock)
                         if (feetOnBlock[1] > -1.5 && feetOnBlock[0] > -0.1 &&
                             feetOnBlock[1] <  0.9 && feetOnBlock[0] <  1.1) {
                             
-                            if (getvoxel(block)) {
+                            if (getVoxel(block)) {
                                 collision = true;
                                 break;
                             }
@@ -173,7 +179,7 @@ function movement(deltatime) {
         groundBlock[1] -= 0.1;
         groundBlock = groundBlock.map(x => Math.floor(x));
 
-        if (feet[1] < groundBlock[1]+1) {
+        if (feet[1] < groundBlock[1]+1 && velocity[1] < 0) {
             var blockBelow = false;
             for (var x = -1; x <= 1; x++) {
                 for (var z = -1; z <= 1; z++) {
@@ -184,11 +190,10 @@ function movement(deltatime) {
                     posOnBlock[0] -= block[0];
                     posOnBlock[2] -= block[2];
 
-                    //console.log(posOnBlock)
                     if (posOnBlock[0] > -0.1 && posOnBlock[2] > -0.1 &&
                         posOnBlock[0] <  1.1 && posOnBlock[2] <  1.1) {
                         
-                        if (getvoxel(block)) {
+                        if (getVoxel(block)) {
                             blockBelow = true;
                             break;
                         }
@@ -208,7 +213,7 @@ function movement(deltatime) {
         headBlock[1] += 0.1;
         headBlock = headBlock.map(x => Math.floor(x));
         
-        if (feet[1]+1.5 > headBlock[1]) {
+        if (feet[1]+1.5 > headBlock[1] && velocity[1] > 0) {
             var blockAbove = false;
             for (var x = -1; x <= 1; x++) {
                 for (var z = -1; z <= 1; z++) {
@@ -219,11 +224,10 @@ function movement(deltatime) {
                     posOnBlock[0] -= block[0];
                     posOnBlock[2] -= block[2];
 
-                    //console.log(posOnBlock)
                     if (posOnBlock[0] > -0.1 && posOnBlock[2] > -0.1 &&
                         posOnBlock[0] <  1.1 && posOnBlock[2] <  1.1) {
                         
-                        if (getvoxel(block)) {
+                        if (getVoxel(block)) {
                             blockAbove = true;
                             break;
                         }

@@ -41,8 +41,9 @@ function loadnext() {
             continue;
         }
 
+        if (!getFrustum(p)) d = d*3;
         
-        if (d < len && getfrustum(p)) {
+        if (d < len) {
             closest = i;
             len = d;
         }

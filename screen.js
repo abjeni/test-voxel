@@ -1,8 +1,8 @@
 'use strict';
 
 function resize() {
-    var displayWidth  = canvas.clientWidth;
-    var displayHeight = canvas.clientHeight;
+    var displayWidth  = window.innerWidth;
+    var displayHeight = window.innerHeight;
 
     if (canvas.width  !== displayWidth ||
         canvas.height !== displayHeight) {
