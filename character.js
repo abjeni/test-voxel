@@ -5,6 +5,11 @@ var grounded = false;
 
 var touchMove = [0,0,0];
 
+function jump() {
+    if (grounded)
+        velocity[1] = 6;
+}
+
 function movement(deltatime) {
     
     var move;
@@ -58,8 +63,8 @@ function movement(deltatime) {
         
         velocity[1] -= deltatime*14;
         
-        if (keys[32] && grounded) {
-            velocity[1] = 6;
+        if (keys[32]) {
+            jump();
         }
         
         if (keys[69]) {
@@ -88,8 +93,8 @@ function movement(deltatime) {
                         posOnBlock[1] -= block[1];
                         posOnBlock[2] -= block[2];
 
-                        if (posOnBlock[1] > -1.5 && posOnBlock[2] > -0.1 &&
-                            posOnBlock[1] <  0.9 && posOnBlock[2] <  1.1) {
+                        if (posOnBlock[1] > -1.4-playersize && posOnBlock[2] > -playersize &&
+                            posOnBlock[1] <  0.99 && posOnBlock[2] <  1.0+playersize) {
                             
                             if (getVoxel(block)) {
                                 collision = true;
@@ -101,7 +106,7 @@ function movement(deltatime) {
 
                 if (collision) {
                     if (velocity[0] < 0) {
-                        var border = sideBlock[0]+1+0.11;
+                        var border = sideBlock[0]+1+0.01+playersize;
                         
                         if (feet[0] < border) {
                             feet[0] = border;
@@ -110,7 +115,7 @@ function movement(deltatime) {
                     }
                     
                     if (velocity[0] > 0) {
-                        var border = sideBlock[0]-0.11;
+                        var border = sideBlock[0]-0.01-playersize;
                         
                         if (feet[0] > border) {
                             feet[0] = border;
@@ -139,8 +144,8 @@ function movement(deltatime) {
                         feetOnBlock[1] -= block[1];
                         feetOnBlock[0] -= block[0];
 
-                        if (feetOnBlock[1] > -1.5 && feetOnBlock[0] > -0.1 &&
-                            feetOnBlock[1] <  0.9 && feetOnBlock[0] <  1.1) {
+                        if (feetOnBlock[1] > -1.4-playersize && feetOnBlock[0] > -playersize &&
+                            feetOnBlock[1] <  0.99 && feetOnBlock[0] <  1.0+playersize) {
                             
                             if (getVoxel(block)) {
                                 collision = true;
@@ -152,7 +157,7 @@ function movement(deltatime) {
 
                 if (collision) {
                     if (velocity[2] < 0) {
-                        var border = sideBlock[2]+1+0.11;
+                        var border = sideBlock[2]+1+0.01+playersize;
                         
                         if (feet[2] < border) {
                             feet[2] = border;
@@ -161,7 +166,7 @@ function movement(deltatime) {
                     }
                     
                     if (velocity[2] > 0) {
-                        var border = sideBlock[2]-0.11;
+                        var border = sideBlock[2]-0.01-playersize;
                         
                         if (feet[2] > border) {
                             feet[2] = border;
@@ -190,8 +195,8 @@ function movement(deltatime) {
                     posOnBlock[0] -= block[0];
                     posOnBlock[2] -= block[2];
 
-                    if (posOnBlock[0] > -0.1 && posOnBlock[2] > -0.1 &&
-                        posOnBlock[0] <  1.1 && posOnBlock[2] <  1.1) {
+                    if (posOnBlock[0] > -playersize && posOnBlock[2] > -playersize &&
+                        posOnBlock[0] <  1.0+playersize && posOnBlock[2] <  1.0+playersize) {
                         
                         if (getVoxel(block)) {
                             blockBelow = true;
@@ -210,10 +215,10 @@ function movement(deltatime) {
 
         
         var headBlock = pos.slice();
-        headBlock[1] += 0.1;
+        headBlock[1] += playersize;
         headBlock = headBlock.map(x => Math.floor(x));
         
-        if (feet[1]+1.5 > headBlock[1] && velocity[1] > 0) {
+        if (feet[1]+1.4+playersize > headBlock[1] && velocity[1] > 0) {
             var blockAbove = false;
             for (var x = -1; x <= 1; x++) {
                 for (var z = -1; z <= 1; z++) {
@@ -224,8 +229,8 @@ function movement(deltatime) {
                     posOnBlock[0] -= block[0];
                     posOnBlock[2] -= block[2];
 
-                    if (posOnBlock[0] > -0.1 && posOnBlock[2] > -0.1 &&
-                        posOnBlock[0] <  1.1 && posOnBlock[2] <  1.1) {
+                    if (posOnBlock[0] > -playersize && posOnBlock[2] > -playersize &&
+                        posOnBlock[0] <  1.0+playersize && posOnBlock[2] <  1.0+playersize) {
                         
                         if (getVoxel(block)) {
                             blockAbove = true;
@@ -236,7 +241,7 @@ function movement(deltatime) {
             }
 
             if (blockAbove) {
-                feet[1] = headBlock[1]-1.5;
+                feet[1] = headBlock[1]-1.4-playersize;
                 
                 if (velocity[1] > 0) velocity[1] = 0;
             }

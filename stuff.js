@@ -139,7 +139,7 @@ function loop(now) {
         var rd = uvToRay(uv);
         var ro = pos;
 
-        var rayCast = castRay(ro,rd, 5.0);
+        var rayCast = castRay(ro,rd, reach);
 
         testcubes[0] = rayCast.hitBlock;
 

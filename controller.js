@@ -34,7 +34,7 @@ canvas.addEventListener("mouseup", function(e) {
         var rd = uvToRay(uv);
         var ro = pos;
 
-        var rayCast = castRay(ro,rd, 5.0);
+        var rayCast = castRay(ro,rd, reach);
         //testcube = map2([ro,rd], (ro,rd) => ro+rd*rayCast.d);
         if (rayCast.didHit) {
             
@@ -139,7 +139,7 @@ canvas.addEventListener("touchend", function(e) {
         var rd = uvToRay(uv);
         var ro = pos;
 
-        var rayCast = castRay(ro,rd, 5.0);
+        var rayCast = castRay(ro,rd, reach);
         //testcube = map2([ro,rd], (ro,rd) => ro+rd*rayCast.d);
         if (rayCast.didHit) {
             

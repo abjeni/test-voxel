@@ -15,6 +15,10 @@ var movespeed = 3;
 var fmovespeed = 30;
 var time = 0;
 
+var playersize = 0.2;
+
+var reach = 5;
+
 var selectedblock = 2;
 
 const imageSize = 128;

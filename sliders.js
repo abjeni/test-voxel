@@ -72,6 +72,14 @@ labels.block.refresh = function(data) {
     this.label.innerHTML = "block: "+selectedblock;
 }
 
+var jumpButton = document.createElement("BUTTON");
+ui.appendChild(jumpButton);
+jumpButton.innerHTML = "JUMP";
+ui.appendChild(document.createElement("BR"));
+jumpButton.addEventListener("click", function() {
+    jump();
+});
+
 /*labels.mobile.refresh = function(data) {
     if (lm) {
         this.label.innerHTML = lm;
