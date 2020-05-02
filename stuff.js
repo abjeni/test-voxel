@@ -9,9 +9,19 @@ gl.enable(gl.CULL_FACE);
 var chunks = new Map();
 
 function updatechunk(chunk) {
-    chunk.datatex = makeDataTexture(chunk.data, chunk.quads, 4, gl.RGBA8UI, gl.RGBA_INTEGER);
-    chunk.texloc = makeDataTexture(chunk.textureNum, chunk.quads, 2, gl.RG8UI, gl.RG_INTEGER);
+    
+    if (chunk.quads > 0) {
+        chunk.datatex = makeDataTexture(chunk.data, chunk.quads, 4, gl.RGBA8UI, gl.RGBA_INTEGER);
+        chunk.texloc = makeDataTexture(chunk.textureNum, chunk.quads, 2, gl.RG8UI, gl.RG_INTEGER);
+    }
+    if (chunk.transparent.quads > 0) {
+        chunk.transparent.datatex = makeDataTexture(chunk.transparent.data, chunk.transparent.quads, 4, gl.RGBA8UI, gl.RGBA_INTEGER);
+        chunk.transparent.texloc = makeDataTexture(chunk.transparent.textureNum, chunk.transparent.quads, 2, gl.RG8UI, gl.RG_INTEGER);
+    }
+
     chunk.loadstate = LOAD_DONE;
+
+    
 
     chunks.set(chunk.center.toString(), chunk);
 }
@@ -91,8 +101,8 @@ var grasstexture = loadTexture();
 addTexture(grasstexture, "grass.jpg", [0,0]);
 addTexture(grasstexture, "dirt.jpg" , [1,0]);
 addTexture(grasstexture, "stone.jpg" , [0,1]);
-addTexture(grasstexture, "dirt.jpg" , [1,1]);
-    
+addTexture(grasstexture, "water.jpg" , [1,1]);
+
 gl.enable(gl.DEPTH_TEST);
 
 var then = 0.0;
@@ -174,13 +184,13 @@ function loop(now) {
 	
     gl.clearColor(0.5, 0.5, 0.8, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	
-    var vao = vaos.cube;
+    
 	var program2 = programs.voxel;
 	
 	gl.useProgram(program2.program);
 	
 	gl.uniform1f(program2.uniforms.u_time, time);
+	gl.uniform1f(program2.uniforms.u_alpha, 1);
 	gl.uniform3fv(program2.uniforms.u_lightPosition, pos);
 	gl.uniform3fv(program2.uniforms.u_cameraPosition, pos);
     gl.uniformMatrix4fv(program2.uniforms.u_proj, false, cameraMatrix);
@@ -189,15 +199,15 @@ function loop(now) {
     gl.bindTexture(gl.TEXTURE_2D, grasstexture);
     gl.uniform1i(program2.uniforms.u_grass, 2);
 
+    var transparents = [];
+
     chunks.forEach((chunk, pos, map) => {
         if (chunk.loadstate == LOAD_DONE) {
-            if (chunk.quads > 0) {
-                var center = chunk.center.map(x => x*chunksize);
-                if (getFrustum(center.map(x => x+chunksize*0.5))) {
-                    gl.uniform3fv(program2.uniforms.u_centerPosition, center);
+            var center = chunk.center.map(x => x*chunksize);
+            if (getFrustum(center.map(x => x+chunksize*0.5))) {
+                gl.uniform3fv(program2.uniforms.u_centerPosition, center);
 
-                    gl.bindVertexArray(chunk.vao);
-                    
+                if (chunk.quads > 0) {
                     gl.activeTexture(gl.TEXTURE0 + 0);
                     gl.bindTexture(gl.TEXTURE_2D, chunk.datatex);
                     gl.uniform1i(program2.uniforms.u_data, 0);
@@ -210,6 +220,9 @@ function loop(now) {
                     var count = chunk.quads*6;
                     var offset = 0;
                     gl.drawArrays(primitiveType, offset, count);
+                }
+                if (chunk.transparent.quads > 0) {
+                    transparents.push(chunk);
                 }
             }
         }
@@ -239,12 +252,40 @@ function loop(now) {
     var type = gl.UNSIGNED_SHORT;
     var offset = 0;
     gl.drawElements(primitiveType, count, type, offset);
-    
-    testcubes.forEach(function(cube) {
-        var program2 = programs.boxFrame;
-        gl.useProgram(program2.program);
 
-        gl.uniformMatrix4fv(program2.uniforms.u_proj, false, cameraMatrix);
+    
+	var program2 = programs.voxel;
+	
+	gl.useProgram(program2.program);
+
+	gl.uniform1f(program2.uniforms.u_alpha, 0.3);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    transparents.forEach(function(chunk) {
+        var center = chunk.center.map(x => x*chunksize);
+        gl.uniform3fv(program2.uniforms.u_centerPosition, center);
+        gl.activeTexture(gl.TEXTURE0 + 0);
+        gl.bindTexture(gl.TEXTURE_2D, chunk.transparent.datatex);
+        gl.uniform1i(program2.uniforms.u_data, 0);
+        
+        gl.activeTexture(gl.TEXTURE0 + 1);
+        gl.bindTexture(gl.TEXTURE_2D, chunk.transparent.texloc);
+        gl.uniform1i(program2.uniforms.u_texpos, 1);
+        
+        var primitiveType = gl.TRIANGLES;
+        var count = chunk.transparent.quads*6;
+        var offset = 0;
+        gl.drawArrays(primitiveType, offset, count);
+    });
+    gl.disable(gl.BLEND);
+
+
+    
+    var program2 = programs.boxFrame;
+    gl.useProgram(program2.program);
+    gl.uniformMatrix4fv(program2.uniforms.u_proj, false, cameraMatrix);
+
+    testcubes.forEach(function(cube) {
         gl.uniform3fv(program2.uniforms.u_position, cube);
 
         var primitiveType = gl.LINES;

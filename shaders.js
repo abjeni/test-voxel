@@ -87,6 +87,7 @@ var voxelFragmentShaderSource =
     in vec3 v_normal;
     in vec2 uv;
     uniform lowp sampler2D u_grass;
+    uniform lowp float u_alpha;
     
     uniform vec3 u_lightPosition;
     uniform vec3 u_cameraPosition;
@@ -99,9 +100,9 @@ var voxelFragmentShaderSource =
         
         float fog = clamp((v_position.y+10.0)*0.05,0.2,1.0);
 
-        color *= fog;
+        //color *= fog;
 
-        outColor = vec4(color,1);
+        outColor = vec4(color*0.8,u_alpha);
         
     }
 `;
@@ -241,7 +242,7 @@ function program(vertexShader, fragMentShader, uniforms) {
 var programs = {
     voxel: new program(shaders.vertexVoxel, shaders.fragmentVoxel, [
         "u_lightPosition", "u_cameraPosition", "u_centerPosition",
-        "u_proj", "u_time", "u_data", "u_texpos", "u_grass", "u_rdist"
+        "u_proj", "u_time", "u_data", "u_texpos", "u_grass", "u_alpha"
     ]),
     character: new program(shaders.vertexCharacter,shaders.fragmentCharacter, [
         "u_lightPosition", "u_cameraPosition", "u_centerPosition",

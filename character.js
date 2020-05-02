@@ -96,7 +96,7 @@ function movement(deltatime) {
                         if (posOnBlock[1] > -1.4-playersize && posOnBlock[2] > -playersize &&
                             posOnBlock[1] <  0.99 && posOnBlock[2] <  1.0+playersize) {
                             
-                            if (getVoxel(block)) {
+                            if (isVoxelSolid(block)) {
                                 collision = true;
                                 break;
                             }
@@ -147,7 +147,7 @@ function movement(deltatime) {
                         if (feetOnBlock[1] > -1.4-playersize && feetOnBlock[0] > -playersize &&
                             feetOnBlock[1] <  0.99 && feetOnBlock[0] <  1.0+playersize) {
                             
-                            if (getVoxel(block)) {
+                            if (isVoxelSolid(block)) {
                                 collision = true;
                                 break;
                             }
@@ -198,7 +198,7 @@ function movement(deltatime) {
                     if (posOnBlock[0] > -playersize && posOnBlock[2] > -playersize &&
                         posOnBlock[0] <  1.0+playersize && posOnBlock[2] <  1.0+playersize) {
                         
-                        if (getVoxel(block)) {
+                        if (isVoxelSolid(block)) {
                             blockBelow = true;
                             break;
                         }
@@ -232,7 +232,7 @@ function movement(deltatime) {
                     if (posOnBlock[0] > -playersize && posOnBlock[2] > -playersize &&
                         posOnBlock[0] <  1.0+playersize && posOnBlock[2] <  1.0+playersize) {
                         
-                        if (getVoxel(block)) {
+                        if (isVoxelSolid(block)) {
                             blockAbove = true;
                             break;
                         }

@@ -48,8 +48,7 @@ var sliders = {
 var labels = {
     fps: new label(),
     time: new label(),
-    block: new label(),
-    mobile: new label()
+    block: new label()
 };
 
 labels.fps.refresh = function(data) {
@@ -79,14 +78,6 @@ ui.appendChild(document.createElement("BR"));
 jumpButton.addEventListener("click", function() {
     jump();
 });
-
-/*labels.mobile.refresh = function(data) {
-    if (lm) {
-        this.label.innerHTML = lm;
-    } else {
-        this.label.innerHTML = "oh no";
-    }
-}*/
 
 function updateinput() {
     for (var name in sliders) {

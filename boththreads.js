@@ -36,20 +36,47 @@ function map2(lists, calc) {
     return result;
 }
 
-
-
-function block(name, texturePosition) {
-    this.name = name;
-    this.texturePosition = texturePosition;
+function isVoxelOpaque(block) {
+    return block.opacity == 1;
 }
 
-var blocks = [
-    new block("air", [0,0]),
-    new block("grass", [0,0]),
-    new block("dirt", [1,0]),
-    new block("stone", [0,1])
-];
+function isVoxelInvisible(block) {
+    return block.opacity == 0;
+}
+
+function isVoxelTransparent(block) {
+    var opacity = block.opacity;
+    return opacity > 0 && opacity < 1;
+}
+
+
+
+function block(texturePosition) {
+    this.texturePosition = texturePosition;
+    this.opacity = 1;
+    this.solid = true;
+}
+
+var blocks = {
+    air:   new block([0,0]),
+    grass: new block([0,0]),
+    dirt:  new block([1,0]),
+    stone: new block([0,1]),
+    water: new block([1,1])
+};
+
+var blockNumbers = [];
+
+Object.keys(blocks).forEach(function (blockName) {
+	blockNumbers.push(blockName);
+});
+
+blocks.air.opacity = 0.0;
+blocks.air.solid = false;
+
+blocks.water.opacity = 0.5;
+blocks.water.solid = false;
 
 
 const rdist = 8;
-const chunksize = 16;
+const chunksize = 32;

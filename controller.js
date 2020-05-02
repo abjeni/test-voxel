@@ -40,12 +40,12 @@ canvas.addEventListener("mouseup", function(e) {
             
             var addBlock;
             if (e.button == 0)
-                addBlock = selectedblock;
+                addBlock = blocks[blockNumbers[selectedblock]];
             else
-                addBlock = 0;
+                addBlock = blocks.air;
 
             var block = rayCast.hitBlock.slice();
-            if (addBlock != 0) block = rayCast.buildBlock.slice();
+            if (addBlock.solid) block = rayCast.buildBlock.slice();
 
             var chunkPosition = block.map(x => Math.floor(x/chunksize));
             var blockPosition = block.map(x => mod(x,chunksize));
@@ -92,7 +92,6 @@ canvas.addEventListener("touchmove", function(e) {
     if (mouseclick[0] != -1) {
         if (isMoving) {
             var movement = map2([m,mouseclick], (m,mc) => (m-mc)*0.01);
-            labels.mobile.label.innerHTML = movement[0]+", "+movement[1];
             movement = movement.map(function(x) {
                 if (x > 1) return 1;
                 if (x < -1) return -1;

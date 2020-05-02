@@ -41,6 +41,10 @@ function makeDataTexture(data, numElements, channels, internalFormat, format) {
     return tex;
 }
 
+function isVoxelSolid(pos) {
+    return getVoxel(pos).solid;
+}
+
 function getVoxel(pos) {
     
     var chunkPosition = pos.map(x => Math.floor(x/chunksize));
@@ -106,7 +110,7 @@ function castRay(ro, rd, maxlen) {
     var d = 0;
     for (var i = 0; i < 100; i++) {
         d = lens[closest]-ird[closest];
-        if (getVoxel(fro) || d > maxlen) {
+        if (isVoxelSolid(fro) || d > maxlen) {
             break;
         }
         
