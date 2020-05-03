@@ -28,8 +28,15 @@ function updatechunk(chunk) {
 
 var voxelWorker = new Worker('voxels.js');
 
+var loading = false;
 voxelWorker.onmessage = function(e) {
     var chunk = e.data;
+
+    if (!loading) {
+        loading = true;
+        pos = [-222.3926858961599, 33.4, -306.21807663397783];
+    }
+
     loadnext();
     updatechunk(chunk);
 };
@@ -258,9 +265,9 @@ function loop(now) {
 	
 	gl.useProgram(program2.program);
 
-	gl.uniform1f(program2.uniforms.u_alpha, 0.3);
+	gl.uniform1f(program2.uniforms.u_alpha, 0.4);
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     transparents.forEach(function(chunk) {
         var center = chunk.center.map(x => x*chunksize);
         gl.uniform3fv(program2.uniforms.u_centerPosition, center);
