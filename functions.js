@@ -1,3 +1,5 @@
+'use strict';
+
 function makeDataTexture(data, numElements, channels, internalFormat, format) {
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);

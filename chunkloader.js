@@ -1,20 +1,29 @@
+'use strict';
+
+importScripts("boththreads.js");
+
 var loadingchunk = false;
 var loadqueue = [];
-var rebuildQueue = [];
 
-function loadchunk(p) {
+var voxelWorker = new Worker('voxels.js');
+var geometryWorker = new Worker('voxelgeometry.js');
+
+var chunks = new Map();
+
+voxelWorker.onmessage = function(e) {
+    var chunk = e.data;
+    chunks.set(chunk.center.toString(), chunk);
+}
+
+async function loadchunk(p) {
     if (!chunks.has(p.toString())) {
         chunks.set(p.toString(), {loadstate: LOAD_WAIT});
         loadqueue.push(p);
     }
 }
 
-function loadnext() {
+async function loadnext() {
     loadingchunk = true;
-
-    if (rebuildQueue.length > 0) {
-        voxelWorker.postMessage(rebuildQueue.pop());
-    }
 
     var len = 9999999.0;
     var closest;
@@ -33,7 +42,6 @@ function loadnext() {
         }
 
         if (d > a*a || error) {
-            
             if (!error) {
                 chunks.delete(chunk.toString());
             }
@@ -47,7 +55,7 @@ function loadnext() {
             continue;
         }
 
-        if (!getFrustum(p)) d = d*3;
+        //if (!getFrustum(p)) d = d*3;
         
         if (d < len) {
             closest = i;
@@ -66,18 +74,32 @@ function loadnext() {
     }
 }
 
-function loadchunks(pos) {
+voxelWorker.onmessage = function() {
     
-    for (var x = -rdist; x <= rdist; x++)
-        for (var y = -rdist; y <= rdist; y++)
-            for (var z = -rdist; z <= rdist; z++) {
-                var p = map2([[x,y,z],pos], (p,pos) => p+pos);
-                loadchunk(p);
-            }
-    loadnext();
 }
 
-function updateChunk(chunkPosition, blockPosition, setBlock) {
+onmessage = function(e) {
+    var type = e.data[0];
+    var pos = e.data[1];
+
+    if (type == NEW_CENTER_CHUNK) {
+        for (var x = -rdist; x <= rdist; x++) {
+            for (var y = -rdist; y <= rdist; y++) {
+                for (var z = -rdist; z <= rdist; z++) {
+                    var p = map2([[x,y,z],pos], (p,pos) => p+pos);
+                    loadchunk(p);
+                }
+            }
+        }
+        if (!loadingchunk) {
+            loadnext();
+        }
+    } else if (type == GET_CHUNK) {
+        postMessage([GET_CHUNK,chunks.get(pos.toString())]);
+    }
+}
+
+/*function updateChunk(chunkPosition, blockPosition, setBlock) {
 
     var chunk = chunks.get(chunkPosition.toString());
 
@@ -87,4 +109,4 @@ function updateChunk(chunkPosition, blockPosition, setBlock) {
         center: chunk.center,
         chunkID: chunk.chunkID
     });
-}
+}*/

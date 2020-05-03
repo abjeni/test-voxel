@@ -1,3 +1,5 @@
+'use strict';
+
 var mouseLock = false;
 
 function rotatePlayer(dx, dy) {

@@ -1,3 +1,5 @@
+'use strict';
+
 var mouseclick = [-1,-1];
 
 var lm = [0,0];
@@ -6,10 +8,20 @@ var freelook = false;
 
 gl.enable(gl.CULL_FACE);
 
-var chunks = new Map();
+var visibleChunks = new Map();
 
-function updatechunk(chunk) {
-    
+function updateRenderChunk(chunk) {
+    if (visibleChunks.has(chunk.center.toString())) {
+        var lastChunk =visibleChunks.get(chunk.center.toString());
+        if (lastChunk.quads > 0) {
+            gl.deleteTexture(lastChunk.datatex);
+            gl.deleteTexture(lastChunk.texloc);
+        }
+        if (lastChunk.transparent.quads > 0) {
+            gl.deleteTexture(lastChunk.transparent.datatex);
+            gl.deleteTexture(lastChunk.transparent.texloc);
+        }
+    }
     if (chunk.quads > 0) {
         chunk.datatex = makeDataTexture(chunk.data, chunk.quads, 4, gl.RGBA8UI, gl.RGBA_INTEGER);
         chunk.texloc = makeDataTexture(chunk.textureNum, chunk.quads, 2, gl.RG8UI, gl.RG_INTEGER);
@@ -19,27 +31,15 @@ function updatechunk(chunk) {
         chunk.transparent.texloc = makeDataTexture(chunk.transparent.textureNum, chunk.transparent.quads, 2, gl.RG8UI, gl.RG_INTEGER);
     }
 
-    chunk.loadstate = LOAD_DONE;
-
-    
-
-    chunks.set(chunk.center.toString(), chunk);
+    visibleChunks.set(chunk.center.toString(), chunk);
 }
+var voxelManager = new Worker('chunkloader.js');
 
-var voxelWorker = new Worker('voxels.js');
-
-var loading = false;
-voxelWorker.onmessage = function(e) {
-    var chunk = e.data;
-
-    if (!loading) {
-        loading = true;
-        pos = [-222.3926858961599, 33.4, -306.21807663397783];
-    }
-
-    loadnext();
-    updatechunk(chunk);
-};
+voxelManager.onmessage = function(e) {
+    //var chunk = e.data;
+    //loadnext();
+    //updatechunk(chunk);
+}
 
 var lastplayerchunk = pos.map(x => Math.floor(x/chunksize));
 loadchunks(lastplayerchunk);
@@ -48,11 +48,12 @@ isVec3Equal = (a,b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
 
 
 function updatevoxels() {
-    var playerchunk = pos.map(x => Math.floor(x/chunksize))
+    var playerchunk = pos.map(x => Math.floor(x/chunksize));
     
-    if (!isVec3Equal(lastplayerchunk, playerchunk)) loadchunks(playerchunk)
+    if (!isVec3Equal(lastplayerchunk, playerchunk))
+        voxelManager.postMessage(playerchunk);
 
-    lastplayerchunk = playerchunk
+    lastplayerchunk = playerchunk;
 }
 
 function loadTexture() {

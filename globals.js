@@ -25,8 +25,4 @@ var testcubes = [];
 
 var cameraMatrix2 = false;
 
-const LOAD_NO   = 0;
-const LOAD_DONE = 1
-const LOAD_WAIT = 2;
-
 const imageSize = 128;
