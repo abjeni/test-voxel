@@ -133,9 +133,9 @@ function loop(now) {
     
     updatevoxels();
     
-    if (!loadingchunk) {
-        loadnext();
-    }
+    //if (!loadingchunk) {
+    //    loadnext();
+    //}
 	
     var aspect = res[0] / res[1];
     var zNear = 0.1;

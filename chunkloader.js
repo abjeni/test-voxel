@@ -74,7 +74,9 @@ function loadchunks(pos) {
                 var p = map2([[x,y,z],pos], (p,pos) => p+pos);
                 loadchunk(p);
             }
-    loadnext();
+    if (!loadingchunk) {
+        loadnext();
+    }
 }
 
 function updateChunk(chunkPosition, blockPosition, setBlock) {
