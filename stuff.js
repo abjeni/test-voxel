@@ -26,16 +26,26 @@ function updatechunk(chunk) {
     chunks.set(chunk.center.toString(), chunk);
 }
 
+var loading = false;
+
 var voxelWorker = new Worker('voxels.js');
 
-var loading = false;
 voxelWorker.onmessage = function(e) {
     var chunk = e.data;
-
     if (!loading) {
         loading = true;
         pos = [-222.3926858961599, 33.4, -306.21807663397783];
     }
+
+    loadnext();
+    updatechunk(chunk);
+}
+
+var voxelWorker2 = new Worker('voxels.js');
+
+
+voxelWorker2.onmessage = function(e) {
+    var chunk = e.data;
 
     loadnext();
     updatechunk(chunk);

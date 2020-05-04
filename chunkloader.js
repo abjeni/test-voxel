@@ -12,10 +12,6 @@ function loadchunk(p) {
 function loadnext() {
     loadingchunk = true;
 
-    if (rebuildQueue.length > 0) {
-        voxelWorker.postMessage(rebuildQueue.pop());
-    }
-
     var len = 9999999.0;
     var closest;
     var plr = pos.slice();
@@ -85,7 +81,7 @@ function updateChunk(chunkPosition, blockPosition, setBlock) {
 
     chunk.chunkID[blockPosition[0]][blockPosition[1]][blockPosition[2]] = setBlock;
 
-    rebuildQueue.push({
+    voxelWorker2.postMessage({
         center: chunk.center,
         chunkID: chunk.chunkID
     });
