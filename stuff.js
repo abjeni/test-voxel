@@ -34,7 +34,7 @@ voxelWorker.onmessage = function(e) {
     var chunk = e.data;
     if (!loading) {
         loading = true;
-        pos = [-222.3926858961599, 33.4, -306.21807663397783];
+        requestAnimationFrame(loop);
     }
 
     loadnext();
@@ -321,7 +321,7 @@ function loop(now) {
 //fetch("shaderfragment.glsl").then((shaderString) => {
 
 //    globalvar = shaderString;
-requestAnimationFrame(loop);
+
 //})
 
 /*
