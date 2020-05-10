@@ -124,6 +124,10 @@ canvas.addEventListener("touchstart", function(e) {
 
 var isMoving = false;
 
+function updateChunk() {
+    
+}
+
 canvas.addEventListener("touchend", function(e) {
     e.preventDefault();
     var m = lm;

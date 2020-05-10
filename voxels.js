@@ -1,6 +1,6 @@
 'use strict';
 
-importScripts("boththreads.js");
+importScripts("voxelgeometry.js");
 
 var init = true;
 var lastc;
@@ -108,7 +108,9 @@ function createChunk(center, s) {
 }
 
 function sendchunk(p) {
-    postMessage(createChunk(p, chunksize));
+    var chunk = createChunk(p, chunksize);
+    var geometry = buildChunk(chunk.chunkID, chunksize);
+    postMessage([chunk, geometry]);
 }
 
 function updateChunk(chunk) {
@@ -116,6 +118,7 @@ function updateChunk(chunk) {
 }
 
 onmessage = function(e) {
+
     //if (Array.isArray(e.data)) {
     var position = e.data;
     sendchunk(position);

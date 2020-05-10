@@ -35,23 +35,41 @@ function updateRenderChunk(chunk) {
 }
 var voxelManager = new Worker('chunkloader.js');
 
-voxelManager.onmessage = function(e) {
-    //var chunk = e.data;
-    //loadnext();
-    //updatechunk(chunk);
+var centerChunk;
+var chunks = new Array(3);
+for (var x = 0; x < 3; x++) {
+    chunks[x] = new Array(3);
+    for (var y = 0; y < 3; y++) {
+        chunks[x][y] = new Array(3);
+    }
 }
 
-var lastplayerchunk = pos.map(x => Math.floor(x/chunksize));
-loadchunks(lastplayerchunk);
 
-isVec3Equal = (a,b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
+voxelManager.onmessage = function(e) {
+    var type = e.data[0];
+    if (type == UPDATE_NEAR_CHUNKS) {
+        chunks = e.data[1];
+    }
+    if (type == UPDATE_NEAR_CHUNK) {
+        var chunk = e.data[1];
+
+        var p = map2([chunk.center,chunks[0][0][0].center], (x,y) => x-y);
+        chunks[p[0]][p[1]][p[2]] = chunk;
+        console.log(chunks);
+    }
+}
+
+
+var lastplayerchunk = [-9999,-9999,-9999];
+//loadchunks(lastplayerchunk);
+
+var isVec3Equal = (a,b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
 
 
 function updatevoxels() {
     var playerchunk = pos.map(x => Math.floor(x/chunksize));
-    
     if (!isVec3Equal(lastplayerchunk, playerchunk))
-        voxelManager.postMessage(playerchunk);
+        voxelManager.postMessage([NEW_CENTER_CHUNK,playerchunk]);
 
     lastplayerchunk = playerchunk;
 }
@@ -133,10 +151,6 @@ function loop(now) {
     updateinput();
     
     updatevoxels();
-    
-    if (!loadingchunk) {
-        loadnext();
-    }
 	
     var aspect = res[0] / res[1];
     var zNear = 0.1;
@@ -209,7 +223,7 @@ function loop(now) {
 
     var transparents = [];
 
-    chunks.forEach((chunk, pos, map) => {
+    visibleChunks.forEach((chunk, pos, map) => {
         if (chunk.loadstate == LOAD_DONE) {
             var center = chunk.center.map(x => x*chunksize);
             if (getFrustum(center.map(x => x+chunksize*0.5))) {

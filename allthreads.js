@@ -76,12 +76,14 @@ blocks.water.opacity = 0.5;
 blocks.water.solid = false;
 
 
-const rdist = 8;
-const chunksize = 32;
+const rdist = 4;
+const chunksize = 16;
 
 const GET_CHUNK = 0;
 const NEW_CENTER_CHUNK = 1;
 const SET_BLOCKS = 2;
+const UPDATE_NEAR_CHUNKS = 3;
+const UPDATE_NEAR_CHUNK = 4;
 
 const LOAD_NO   = 0;
 const LOAD_DONE = 1

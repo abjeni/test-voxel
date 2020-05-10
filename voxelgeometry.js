@@ -1,11 +1,9 @@
 'use strict';
 
-importScripts("boththreads.js");
+importScripts("allthreads.js");
 
-function buildChunk(chunk, s) {
+function buildChunk(chunkID, s) {
 
-    
-    var chunkID = chunk.chunkID
     var data2 = [];
     var dataTransparent2 = [];
     
@@ -88,15 +86,15 @@ function buildChunk(chunk, s) {
         dataTransparent.set(d,i*4);
     }
     
-    chunk.data = data;
-    chunk.textureNum = textureNum;
-    chunk.quads = numquads;
-    
-    chunk.transparent = {
-        data: dataTransparent,
-        textureNum: textureNumTransparent,
-        quads: numquadsTransparent,
+    return {
+        data: data;
+        textureNum: textureNum;
+        quads: numquads;
+        
+        transparent: {
+            data: dataTransparent,
+            textureNum: textureNumTransparent,
+            quads: numquadsTransparent,
+        }
     }
-
-	return chunk;
 }

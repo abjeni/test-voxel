@@ -1,9 +1,12 @@
 'use strict';
 
-importScripts("boththreads.js");
+importScripts("allthreads.js");
 
 var loadingchunk = false;
 var loadqueue = [];
+var playerChunk;
+
+var unloadedNearChunks;
 
 var voxelWorker = new Worker('voxels.js');
 var geometryWorker = new Worker('voxelgeometry.js');
@@ -13,21 +16,28 @@ var chunks = new Map();
 voxelWorker.onmessage = function(e) {
     var chunk = e.data;
     chunks.set(chunk.center.toString(), chunk);
+    
+    var pos = chunk.center;
+    if (map2([pos,playerChunk], (x,y) => x-y)
+        .reduce((acc, x) => acc && x >= -1 && x <= 1)) {
+
+        postMessage([UPDATE_NEAR_CHUNK,chunk]);
+    }
 }
 
-async function loadchunk(p) {
+function loadchunk(p) {
     if (!chunks.has(p.toString())) {
         chunks.set(p.toString(), {loadstate: LOAD_WAIT});
         loadqueue.push(p);
     }
 }
 
-async function loadnext() {
+function loadnext() {
     loadingchunk = true;
 
     var len = 9999999.0;
     var closest;
-    var plr = pos.slice();
+    var plr = playerChunk.slice();
     for (var i = 0; i < loadqueue.length; i++) {
         var chunk = loadqueue[i];
         var p = chunk.map(x => (x+0.5)*chunksize);
@@ -64,8 +74,8 @@ async function loadnext() {
     }
 
     if (closest !== undefined) {
-        var chunk = loadqueue[closest];
-        voxelWorker.postMessage(chunk);
+        var chunkPos = loadqueue[closest];
+        voxelWorker.postMessage(chunkPos);
 
         loadqueue[closest] = loadqueue[loadqueue.length-1];
         loadqueue.pop();
@@ -74,27 +84,45 @@ async function loadnext() {
     }
 }
 
-voxelWorker.onmessage = function() {
-    
-}
-
 onmessage = function(e) {
     var type = e.data[0];
-    var pos = e.data[1];
 
     if (type == NEW_CENTER_CHUNK) {
+        playerChunk = e.data[1];
+        
+        var nearChunks = new Array(3);
+        for (var x = 0; x < 3; x++) {
+            nearChunks[x] = new Array(3);
+            for (var y = 0; y < 3; y++) {
+                nearChunks[x][y] = new Array(3);
+                for (var z = 0; z < 3; z++) {
+                    var p = map2([[x,y,z],playerChunk], (p,pos) => p+pos-1);
+                    var chunk = chunks.get(p.toString());
+                    nearChunks[x][y][z] = chunk;
+
+                    if (chunk == undefined) {
+                        nearChunks[x][y][z] = {center: p}
+                    }
+                }
+            }
+        }
+
+        this.postMessage([UPDATE_NEAR_CHUNKS,nearChunks]);
+        
         for (var x = -rdist; x <= rdist; x++) {
             for (var y = -rdist; y <= rdist; y++) {
                 for (var z = -rdist; z <= rdist; z++) {
-                    var p = map2([[x,y,z],pos], (p,pos) => p+pos);
+                    var p = map2([[x,y,z],playerChunk], (p,pos) => p+pos);
                     loadchunk(p);
                 }
             }
         }
+
         if (!loadingchunk) {
             loadnext();
         }
     } else if (type == GET_CHUNK) {
+        var pos = e.data[1];
         postMessage([GET_CHUNK,chunks.get(pos.toString())]);
     }
 }

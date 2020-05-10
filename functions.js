@@ -49,31 +49,9 @@ function isVoxelSolid(pos) {
 
 function getVoxel(pos) {
     
-    var chunkPosition = pos.map(x => Math.floor(x/chunksize));
-    var blockPosition = pos.map(x => mod(x,chunksize));
+    //var chunk
 
-    if (!chunks.has(chunkPosition.toString())) return true;
-    var chunk = chunks.get(chunkPosition.toString());
-    if (chunk.loadstate == LOAD_WAIT) return true;
-    return chunk.chunkID[blockPosition[0]][blockPosition[1]][blockPosition[2]];
-
-    /*var p = pos.map(x => x*0.4);
-
-    var p2 = p.slice();
-
-    p[0] = Math.cos(p2[0]*.2739 + 3.0*Math.sin(0.5*p2[2]));
-    p[1] = Math.cos(p2[1]*.2739 + 3.0*Math.sin(0.5*p2[0]));
-    p[2] = Math.cos(p2[2]*.2739 + 3.0*Math.sin(0.5*p2[1]));
-    
-    var n = p[1]+p[0]+p[2];//p.reduce((acc,val) => acc+val);
-    
-    //var a = pos.reduce((acc,x) => acc + Math.sin(x*1.4))/3-1;
-
-    return n > Math.max(pos[1]*0.1,-2);*/
-
-
-    /*var a = Terrain([pos[0],pos[2]]);
-    return a > pos[1];*/
+    return blocks.grass;
 }
 
 function pixelToUv(pixel) {
