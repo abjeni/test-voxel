@@ -25,4 +25,6 @@ var testcubes = [];
 
 var cameraMatrix2 = false;
 
+var chunks;
+
 const imageSize = 128;

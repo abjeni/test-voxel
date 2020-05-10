@@ -2,6 +2,10 @@
 
 var mouseLock = false;
 
+var mouseclick = [-1,-1];
+
+var lm = [0,0];
+
 function rotatePlayer(dx, dy) {
     var a;
     if (freelook) {a = frot;}

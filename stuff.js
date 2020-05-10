@@ -35,14 +35,14 @@ function updateRenderChunk(chunk) {
 }
 var voxelManager = new Worker('chunkloader.js');
 
-var centerChunk;
-var chunks = new Array(3);
+chunks = new Array(3);
 for (var x = 0; x < 3; x++) {
     chunks[x] = new Array(3);
     for (var y = 0; y < 3; y++) {
         chunks[x][y] = new Array(3);
     }
 }
+chunks[0][0][0] = {center: [0,0,0]};
 
 
 voxelManager.onmessage = function(e) {
@@ -55,7 +55,10 @@ voxelManager.onmessage = function(e) {
 
         var p = map2([chunk.center,chunks[0][0][0].center], (x,y) => x-y);
         chunks[p[0]][p[1]][p[2]] = chunk;
-        console.log(chunks);
+    }
+    if (type == GET_CHUNK) {
+        var chunk = e.data[1];
+        updateRenderChunk(chunk);
     }
 }
 
@@ -68,10 +71,10 @@ var isVec3Equal = (a,b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
 
 function updatevoxels() {
     var playerchunk = pos.map(x => Math.floor(x/chunksize));
-    if (!isVec3Equal(lastplayerchunk, playerchunk))
+    if (!isVec3Equal(lastplayerchunk, playerchunk)) {
         voxelManager.postMessage([NEW_CENTER_CHUNK,playerchunk]);
-
-    lastplayerchunk = playerchunk;
+        lastplayerchunk = playerchunk;
+    }
 }
 
 function loadTexture() {
@@ -224,28 +227,26 @@ function loop(now) {
     var transparents = [];
 
     visibleChunks.forEach((chunk, pos, map) => {
-        if (chunk.loadstate == LOAD_DONE) {
-            var center = chunk.center.map(x => x*chunksize);
-            if (getFrustum(center.map(x => x+chunksize*0.5))) {
-                gl.uniform3fv(program2.uniforms.u_centerPosition, center);
+        var center = chunk.center.map(x => x*chunksize);
+        if (getFrustum(center.map(x => x+chunksize*0.5))) {
+            gl.uniform3fv(program2.uniforms.u_centerPosition, center);
 
-                if (chunk.quads > 0) {
-                    gl.activeTexture(gl.TEXTURE0 + 0);
-                    gl.bindTexture(gl.TEXTURE_2D, chunk.datatex);
-                    gl.uniform1i(program2.uniforms.u_data, 0);
-                    
-                    gl.activeTexture(gl.TEXTURE0 + 1);
-                    gl.bindTexture(gl.TEXTURE_2D, chunk.texloc);
-                    gl.uniform1i(program2.uniforms.u_texpos, 1);
-                    
-                    var primitiveType = gl.TRIANGLES;
-                    var count = chunk.quads*6;
-                    var offset = 0;
-                    gl.drawArrays(primitiveType, offset, count);
-                }
-                if (chunk.transparent.quads > 0) {
-                    transparents.push(chunk);
-                }
+            if (chunk.quads > 0) {
+                gl.activeTexture(gl.TEXTURE0 + 0);
+                gl.bindTexture(gl.TEXTURE_2D, chunk.datatex);
+                gl.uniform1i(program2.uniforms.u_data, 0);
+                
+                gl.activeTexture(gl.TEXTURE0 + 1);
+                gl.bindTexture(gl.TEXTURE_2D, chunk.texloc);
+                gl.uniform1i(program2.uniforms.u_texpos, 1);
+                
+                var primitiveType = gl.TRIANGLES;
+                var count = chunk.quads*6;
+                var offset = 0;
+                gl.drawArrays(primitiveType, offset, count);
+            }
+            if (chunk.transparent.quads > 0) {
+                transparents.push(chunk);
             }
         }
     });

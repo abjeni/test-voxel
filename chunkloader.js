@@ -14,15 +14,22 @@ var geometryWorker = new Worker('voxelgeometry.js');
 var chunks = new Map();
 
 voxelWorker.onmessage = function(e) {
-    var chunk = e.data;
+    var chunk = e.data[0];
+    var geometry = e.data[1];
     chunks.set(chunk.center.toString(), chunk);
     
     var pos = chunk.center;
-    if (map2([pos,playerChunk], (x,y) => x-y)
-        .reduce((acc, x) => acc && x >= -1 && x <= 1)) {
+    var p = map2([pos,playerChunk], (x,y) => x-y);
+    if (p[0] >= -1 && p[0] <= 1 &&
+        p[1] >= -1 && p[1] <= 1 &&
+        p[2] >= -1 && p[2] <= 1) {
 
         postMessage([UPDATE_NEAR_CHUNK,chunk]);
     }
+    geometry.center = chunk.center;
+    postMessage([GET_CHUNK,geometry]);
+
+    loadnext();
 }
 
 function loadchunk(p) {
@@ -40,18 +47,18 @@ function loadnext() {
     var plr = playerChunk.slice();
     for (var i = 0; i < loadqueue.length; i++) {
         var chunk = loadqueue[i];
-        var p = chunk.map(x => (x+0.5)*chunksize);
+        var p = chunk.map(x => x);
         
         var d = dot2(map2([p,plr],(p,plr) => p-plr));
         
-        var a = (rdist+1)*chunksize;
+        var a = (rdist+1);
 
         var error = !chunks.has(chunk.toString());
         if (!error) {
             error = chunks.get(chunk.toString()).loadstate != LOAD_WAIT;
         }
 
-        if (d > a*a || error) {
+        if (error) {
             if (!error) {
                 chunks.delete(chunk.toString());
             }
@@ -98,10 +105,13 @@ onmessage = function(e) {
                 for (var z = 0; z < 3; z++) {
                     var p = map2([[x,y,z],playerChunk], (p,pos) => p+pos-1);
                     var chunk = chunks.get(p.toString());
-                    nearChunks[x][y][z] = chunk;
 
                     if (chunk == undefined) {
                         nearChunks[x][y][z] = {center: p}
+                    } else if (chunk.center == undefined) {
+                        nearChunks[x][y][z] = {center: p}
+                    } else {
+                        nearChunks[x][y][z] = chunk;
                     }
                 }
             }

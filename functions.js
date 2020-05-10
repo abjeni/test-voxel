@@ -49,7 +49,20 @@ function isVoxelSolid(pos) {
 
 function getVoxel(pos) {
     
-    //var chunk
+    var chunkPosition = pos.map(x => Math.floor(x/chunksize));
+    var blockPosition = pos.map(x => mod(x,chunksize));
+    
+    var p = map2([chunkPosition, chunks[0][0][0].center], (x,y) => x-y);
+    if (p[0] >= 0 && p[0] <= 2 &&
+        p[1] >= 0 && p[1] <= 2 &&
+        p[2] >= 0 && p[2] <= 2) {
+        
+        var chunkID = chunks[p[0]][p[1]][p[2]].chunkID;
+        
+        if (chunkID != undefined) {
+            return chunkID[blockPosition[0]][blockPosition[1]][blockPosition[2]];
+        }
+    }
 
     return blocks.grass;
 }
@@ -128,7 +141,5 @@ function getFrustum(p) {
     var a = m4.transformVector(cameraMatrix2,p2);
     a[3] += chunksize;
     return a[0] > -a[3] && a[0] < a[3]
-        && a[1] > -a[3] && a[1] < a[3]
-        //|| dot2(map2([lastplayerchunk,p],(a,b) => (a-b/chunksize))) < 2.1
-           ;
+        && a[1] > -a[3] && a[1] < a[3];
 }

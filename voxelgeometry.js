@@ -87,9 +87,9 @@ function buildChunk(chunkID, s) {
     }
     
     return {
-        data: data;
-        textureNum: textureNum;
-        quads: numquads;
+        data: data,
+        textureNum: textureNum,
+        quads: numquads,
         
         transparent: {
             data: dataTransparent,
