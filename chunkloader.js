@@ -11,26 +11,44 @@ var unloadedNearChunks;
 var voxelWorker = new Worker('voxels.js');
 var geometryWorker = new Worker('voxelgeometry.js');
 
-var chunks = new Map();
+var nextChunk;
 
-voxelWorker.onmessage = function(e) {
-    var chunk = e.data[0];
-    var geometry = e.data[1];
-    chunks.set(chunk.center.toString(), chunk);
-    
-    var pos = chunk.center;
-    var p = map2([pos,playerChunk], (x,y) => x-y);
-    if (p[0] >= -1 && p[0] <= 1 &&
-        p[1] >= -1 && p[1] <= 1 &&
-        p[2] >= -1 && p[2] <= 1) {
+var voxelWorkerAmount = 8;
+var voxelWorkers = new Array(voxelWorkerAmount);
 
-        postMessage([UPDATE_NEAR_CHUNK,chunk]);
-    }
-    geometry.center = chunk.center;
-    postMessage([GET_CHUNK,geometry]);
+for (var i = 0; i < voxelWorkerAmount; i++) {
+    voxelWorker = new Worker('voxels.js');
 
-    loadnext();
+    voxelWorker.onmessage = function(j) {
+        var k = j;
+        return function(e) {
+            voxelWorkers[k].loading = false;
+            var chunk = e.data[0];
+            var geometry = e.data[1];
+            chunks.set(chunk.center.toString(), chunk);
+            
+            var pos = chunk.center;
+            var p = map2([pos,playerChunk], (x,y) => x-y);
+            if (p[0] >= -1 && p[0] <= 1 &&
+                p[1] >= -1 && p[1] <= 1 &&
+                p[2] >= -1 && p[2] <= 1) {
+        
+                postMessage([UPDATE_NEAR_CHUNK,chunk]);
+            }
+            geometry.center = chunk.center;
+            postMessage([GET_CHUNK,geometry]);
+        
+            loadnext();
+        }
+    }(i);
+
+    voxelWorkers[i] = {
+        worker: voxelWorker,
+        loading: false
+    };
 }
+
+var chunks = new Map();
 
 function loadchunk(p) {
     if (!chunks.has(p.toString())) {
@@ -39,7 +57,7 @@ function loadchunk(p) {
     }
 }
 
-function loadnext() {
+function findnext() {
     loadingchunk = true;
 
     var len = 9999999.0;
@@ -80,15 +98,47 @@ function loadnext() {
         }
     }
 
-    if (closest !== undefined) {
+    if (nextChunk == undefined) {
         var chunkPos = loadqueue[closest];
-        voxelWorker.postMessage(chunkPos);
+        nextChunk = chunkPos;
 
         loadqueue[closest] = loadqueue[loadqueue.length-1];
         loadqueue.pop();
     } else {
         loadingchunk = false;
     }
+}
+
+function loadnext() {
+
+
+    if (nextChunk == undefined) {
+        findnext();
+    }
+
+
+    if (loadingchunk && nextChunk != undefined) {
+        for (var i = 0; i < voxelWorkerAmount; i++) {
+            voxelWorker = voxelWorkers[i];
+            if (!voxelWorker.loading) {
+                voxelWorker.loading = true;
+                voxelWorker.worker.postMessage(nextChunk);
+                nextChunk = undefined;
+                break;
+            }
+        }
+        if (nextChunk == undefined) {
+            loadnext();
+        }
+    }
+    /*if (closest !== undefined) {
+        var chunkPos = loadqueue[closest];
+        voxelWorker.postMessage(chunkPos);
+
+        loadqueue[closest] = loadqueue[loadqueue.length-1];
+        loadqueue.pop();
+
+    } else */
 }
 
 onmessage = function(e) {
@@ -117,7 +167,7 @@ onmessage = function(e) {
             }
         }
 
-        this.postMessage([UPDATE_NEAR_CHUNKS,nearChunks]);
+        postMessage([UPDATE_NEAR_CHUNKS,nearChunks]);
         
         for (var x = -rdist; x <= rdist; x++) {
             for (var y = -rdist; y <= rdist; y++) {
