@@ -3,7 +3,6 @@
 importScripts("allthreads.js");
 
 function buildChunk(chunkID, s) {
-
     var data2 = [];
     var dataTransparent2 = [];
     
@@ -97,4 +96,11 @@ function buildChunk(chunkID, s) {
             quads: numquadsTransparent,
         }
     }
+}
+
+onmessage = function(e) {
+    var chunk = e.data;
+    var geometry = buildChunk(chunk.chunkID, chunksize);
+    geometry.center = chunk.center;
+    postMessage(geometry);
 }

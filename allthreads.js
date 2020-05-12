@@ -76,7 +76,7 @@ blocks.water.opacity = 0.5;
 blocks.water.solid = false;
 
 
-const rdist = 8;
+const rdist = 2;
 const chunksize = 32;
 
 const GET_CHUNK = 0;

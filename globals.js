@@ -7,7 +7,7 @@ var keys = new Array(256).fill(false);
 
 var rot = [0,0];
 //var pos = [1.5,10,24.5];
-var pos =  [-30,1.4,0];
+var pos =  [-61.5, 22.5, 20.5];
 var frot = rot.slice();
 var fpos = pos.slice();
 

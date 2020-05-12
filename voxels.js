@@ -86,7 +86,7 @@ function createChunk(center, s) {
         for (var z = 0; z < s+1; z++) {
             var h = Terrain([c[0]+x,c[2]+z]);
             for (var y = 0; y < s+1; y++) {
-                var y2 = c[1]+y
+                var y2 = c[1]+y;
                 if (y2 < h-3)//getvoxel([c[0]+x,c[1]+y,c[2]+z]);
                     chunkID[x][y][z] = blocks.stone;
                 else if (y2 < h-1)
@@ -113,17 +113,7 @@ function sendchunk(p) {
     postMessage([chunk, geometry]);
 }
 
-function updateChunk(chunk) {
-    postMessage(buildChunk(chunk, chunksize));
-}
-
 onmessage = function(e) {
-
-    //if (Array.isArray(e.data)) {
     var position = e.data;
     sendchunk(position);
-    //} else {
-    //    var chunk = e.data;
-    //    updateChunk(chunk);
-    //}
 }

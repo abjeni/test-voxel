@@ -56,17 +56,7 @@ canvas.addEventListener("mouseup", function(e) {
             var chunkPosition = block.map(x => Math.floor(x/chunksize));
             var blockPosition = block.map(x => mod(x,chunksize));
 
-            updateChunk(chunkPosition, blockPosition, addBlock);
-
-            for (var i = 0; i < 3; i++) {
-                if (blockPosition[i] == 0) {
-                    var cp = chunkPosition.slice();
-                    cp[i] -= 1;
-                    var bp = blockPosition.slice();
-                    bp[i] += chunksize;
-                    updateChunk(cp, bp, addBlock);
-                }
-            }
+            setBlock(block, addBlock);
         }
     }
     
@@ -128,8 +118,19 @@ canvas.addEventListener("touchstart", function(e) {
 
 var isMoving = false;
 
-function updateChunk() {
-    
+function setBlock(pos, block) {
+
+    var chunkPosition = pos.map(x => Math.floor(x/chunksize));
+    var blockPosition = pos.map(x => mod(x,chunksize));
+
+    var p = map2([chunkPosition, chunks[0][0][0].center], (x,y) => x-y);
+    if (p[0] >= 0 && p[0] <= 2 &&
+        p[1] >= 0 && p[1] <= 2 &&
+        p[2] >= 0 && p[2] <= 2) {
+        
+        chunks[p[0]][p[1]][p[2]].chunkID[blockPosition[0]][blockPosition[1]][blockPosition[2]] = block;
+        voxelManager.postMessage([SET_BLOCKS, [[pos, block]]]);
+    }
 }
 
 canvas.addEventListener("touchend", function(e) {
@@ -161,20 +162,7 @@ canvas.addEventListener("touchend", function(e) {
             var block = rayCast.hitBlock.slice();
             if (addBlock != 0) block = rayCast.buildBlock.slice();
 
-            var chunkPosition = block.map(x => Math.floor(x/chunksize));
-            var blockPosition = block.map(x => mod(x,chunksize));
-
-            updateChunk(chunkPosition, blockPosition, addBlock);
-
-            for (var i = 0; i < 3; i++) {
-                if (blockPosition[i] == 0) {
-                    var cp = chunkPosition.slice();
-                    cp[i] -= 1;
-                    var bp = blockPosition.slice();
-                    bp[i] += chunksize;
-                    updateChunk(cp, bp, addBlock);
-                }
-            }
+            setBlock(block, addBlock);
         }
     }
     
