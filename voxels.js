@@ -93,8 +93,8 @@ function createChunk(center, s) {
                     chunkID[x][y][z] = blocks.dirt;
                 else if (y2 <= h)
                     chunkID[x][y][z] = blocks.grass;
-                else if (y2 <= waterLevel) {
-                    chunkID[x][y][z] = blocks.water;
+//                else if (y2 <= waterLevel) {
+//                    chunkID[x][y][z] = blocks.water;
                 } else
                     chunkID[x][y][z] = blocks.air;
             }
