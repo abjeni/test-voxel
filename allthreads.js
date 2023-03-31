@@ -60,7 +60,8 @@ var blocks = {
     grass: new block([0,0]),
     dirt:  new block([1,0]),
     stone: new block([0,1]),
-    water: new block([1,1])
+    water: new block([1,1]),
+    sand:  new block([2,0])
 };
 
 var blockNumbers = [];

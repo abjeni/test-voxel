@@ -81,15 +81,10 @@ function loadTexture() {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
-    // Because images have to be download over the internet
-    // they might take a moment until they are ready.
-    // Until then put a single pixel in the texture so we can
-    // use it immediately. When the image has finished downloading
-    // we'll update the texture with the contents of the image.
-    const levels = Math.log2(imageSize)+1;
+    const levels = Math.log2(imageSize);
     const internalFormat = gl.RGBA8;
-    const width = imageSize*2;
-    const height = imageSize*2;
+    const width = imageSize*4;
+    const height = imageSize*4;
     gl.texStorage2D(gl.TEXTURE_2D, levels, internalFormat, width, height);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
@@ -115,7 +110,7 @@ function addTexture(texture, url, p) {
 
         loadedimages++;
 
-        if (loadedimages == 4) {
+        if (loadedimages == 8) {
             gl.bindTexture(gl.TEXTURE_2D, grasstexture);
             gl.generateMipmap(gl.TEXTURE_2D);
         }
@@ -131,6 +126,10 @@ addTexture(grasstexture, "grass.jpg", [0,0]);
 addTexture(grasstexture, "dirt.jpg" , [1,0]);
 addTexture(grasstexture, "stone.jpg" , [0,1]);
 addTexture(grasstexture, "water.jpg" , [1,1]);
+addTexture(grasstexture, "sand.jpg" , [2,0]);
+addTexture(grasstexture, "dirt.jpg" , [3,0]);
+addTexture(grasstexture, "stone.jpg" , [2,1]);
+addTexture(grasstexture, "water.jpg" , [3,1]);
 
 gl.enable(gl.DEPTH_TEST);
 

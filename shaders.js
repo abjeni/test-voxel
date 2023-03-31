@@ -57,7 +57,7 @@ var voxelVertexShaderSource =
         //quadid = quadid ^ diri;
 
         lowp vec2 quad = vec2(quadid&1u,(quadid>>1u)&1u);
-        uv = quad/2.0+vec2(texpos)*0.5;
+        uv = (quad+vec2(texpos))*0.25;
         if (diri == 0u) quad.xy = quad.yx;
 
         lowp vec3 nor = vec3(0);
