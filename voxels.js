@@ -89,7 +89,7 @@ function createChunk(center, s) {
                 var y2 = c[1]+y;
                 if (y2 < h-3)//getvoxel([c[0]+x,c[1]+y,c[2]+z]);
                     chunkID[x][y][z] = blocks.stone;
-                else if (y2 < h-1)
+                else if (y2 < h-1 || (y2 <= waterlevel && y2 <= h))
                     chunkID[x][y][z] = blocks.dirt;
                 else if (y2 <= h)
                     chunkID[x][y][z] = blocks.grass;
