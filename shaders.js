@@ -3,7 +3,7 @@
 var voxelVertexShaderSource =
 `#version 300 es
 
-    precision mediump float;
+    precision highp float;
     
     uniform mat4 u_proj;
     uniform vec3 u_centerPosition;
@@ -110,7 +110,7 @@ var voxelFragmentShaderSource =
 var characterVertexShaderSource =
 `#version 300 es
 
-    precision mediump float;
+    precision highp float;
 
     in vec4 a_position;
     in vec3 a_normal;
@@ -155,7 +155,7 @@ var characterFragmentShaderSource =
 var boxFrameVertexShaderSource =
 `#version 300 es
 
-    precision mediump float;
+    precision highp float;
     
     uniform vec3 u_position;
     uniform mat4 u_proj;
